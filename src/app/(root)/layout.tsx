@@ -22,7 +22,7 @@ export default async function Layout({
   }
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-y-scroll">
+    <div className="flex h-screen w-full flex-col items-center overflow-y-scroll">
       {/* Navbar */}
       <nav className="w-full bg-background">
         <div className="mx-auto flex max-w-7xl items-center justify-end px-4 py-4">
@@ -40,7 +40,7 @@ export default async function Layout({
         </div>
         <Separator />
       </nav>
-      <main className="flex-1 px-6 py-6">{children}</main>
+      {children}
     </div>
   );
 }
