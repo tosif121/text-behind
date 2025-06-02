@@ -41,3 +41,20 @@ export const getUser = query({
     return user;
   },
 });
+
+
+//deduct credits from user
+export const deductCredits = mutation(async ({ db }, { userId, amount }: { userId: string; amount: number }) => {
+  const user = await db.query("users").filter((q) => q.eq(q.field("userId"), userId)).first();
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.credits < amount) {
+    throw new Error("Insufficient credits");
+  }
+
+  // Deduct the credits
+  await db.patch(user._id, { credits: user.credits - amount });
+});

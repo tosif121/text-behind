@@ -8,10 +8,20 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen">
+      <div
+              className={cn(
+                "absolute inset-0 z-[-1] bg-gray-100 dark:bg-gray-900",
+                "absolute inset-0",
+                "[background-size:20px_20px]",
+                "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
+                "dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]",
+              )}
+            />
       <div className="container mx-auto px-2">
         {/* Pricing Card */}
         <div className="max-w-sm mx-auto mt-10 md:mt-15">
