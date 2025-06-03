@@ -65,7 +65,9 @@ const EditorPage = async () => {
             </Card>
           </div>
         ) : (
-          <ThumbnailCreator/>
+          <main className="mt-10">
+            <ThumbnailCreator/>
+          </main>
         )}
       </div>
     </div>
