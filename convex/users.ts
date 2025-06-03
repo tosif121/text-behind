@@ -58,3 +58,28 @@ export const deductCredits = mutation(async ({ db }, { userId, amount }: { userI
   // Deduct the credits
   await db.patch(user._id, { credits: user.credits - amount });
 });
+
+
+export const addCreditsIfPaid = mutation({
+  args: {
+    email: v.string(),
+    CustomerId: v.string(),
+    OrderId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("email"), args.email))
+      .first();
+
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
+      credits: user.credits + 50, 
+      CustomerId: args.CustomerId,
+      OrderId: args.OrderId,
+    });
+
+    return { success: true };
+  },
+});
