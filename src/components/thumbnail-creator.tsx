@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Dropzone from "./dropzone";
-import Style from "./style";
 import { removeBackground } from "@imgly/background-removal";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -19,62 +19,65 @@ import { Slider } from "./ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AspectRatio } from "./ui/aspect-ratio";
 import { Separator } from "./ui/separator";
-import { inter, domine } from "@/app/fonts";
+import { inter, domine } from "@/app/fonts"; 
 import { generate, refresh } from "@/app/actions/generate";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ArrowLeft,
   Download,
   RotateCcw,
   Type,
   Image as ImageIcon,
-  Settings,
-  Move,
-  RotateCw,
   Loader2,
+  PlusCircle,
+  Trash2,
+  Copy,
 } from "lucide-react";
 import { SkeletonCard } from "./SkeletonCard";
 
-const presets = {
-  style1: {
-    fontSize: 100,
-    fontWeight: "bold",
-    color: "rgba(255, 255, 255, 1)",
-    opacity: 1,
-  },
-  style2: {
-    fontSize: 100,
-    fontWeight: "bold",
-    color: "rgba(0, 0, 0, 1)",
-    opacity: 1,
-  },
-  style3: {
-    fontSize: 100,
-    fontWeight: "bold",
-    color: "rgba(255, 255, 255, 0.8)",
-    opacity: 0.8,
-  },
+interface TextElement {
+  id: string;
+  content: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  color: string;
+  opacity: number;
+  rotation: number;
+  positionX: number;
+  positionY: number;
+  letterSpacing: number;
+}
+
+const initialTextElement: Omit<TextElement, "id"> = {
+  content: "POV",
+  fontFamily: "arial",
+  fontSize: 200,
+  fontWeight: 700,
+  color: "rgba(255, 255, 255, 1)",
+  opacity: 100,
+  rotation: 0,
+  positionX: 50,
+  positionY: 50,
+  letterSpacing: 0,
 };
 
 const ThumbnailCreator = () => {
-  const [selectedStyle, setSelectedStyle] = useState("style1");
   const [loading, setLoading] = useState(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [processedImageSrc, setProcessedImageSrc] = useState<string | null>(
-    null
-  );
+  const [processedImageSrc, setProcessedImageSrc] = useState<string | null>(null);
   const [canvasReady, setCanvasReady] = useState(false);
-  const [text, setText] = useState("POV");
-  const [font, setFont] = useState("arial");
-
-  // Control states
-  const [positionX, setPositionX] = useState(50);
-  const [positionY, setPositionY] = useState(50);
-  const [textOpacity, setTextOpacity] = useState(100);
-  const [letterSpacing, setLetterSpacing] = useState(0);
-  const [fontWeight, setFontWeight] = useState(700);
-  const [rotation, setRotation] = useState(0);
+  const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [backgroundOpacity, setBackgroundOpacity] = useState(100);
+  const [imageBrightness, setImageBrightness] = useState(100);
+  const [imageContrast, setImageContrast] = useState(100);
 
   const setSelectedImage = async (file?: File) => {
     if (file) {
@@ -83,11 +86,18 @@ const ThumbnailCreator = () => {
       reader.onload = async (e) => {
         const src = e.target?.result as string;
         setImageSrc(src);
-
-        const blob = await removeBackground(src);
-        const processedUrl = URL.createObjectURL(blob);
-        setProcessedImageSrc(processedUrl);
+        try {
+          const blob = await removeBackground(src);
+          const processedUrl = URL.createObjectURL(blob);
+          setProcessedImageSrc(processedUrl);
+        } catch (error) {
+          console.error("Error removing background:", error);
+          setProcessedImageSrc(null); 
+        }
         setCanvasReady(true);
+        if (textElements.length === 0) {
+          addNewText();
+        }
         setLoading(false);
       };
       reader.readAsDataURL(file);
@@ -95,205 +105,226 @@ const ThumbnailCreator = () => {
     }
   };
 
+  const addNewText = () => {
+    setTextElements((prev) => [
+      ...prev,
+      { ...initialTextElement, id: Date.now().toString() + Math.random().toString(36).substring(2, 15) },
+    ]);
+  };
+
+  const updateTextElement = (id: string, newProps: Partial<TextElement>) => {
+    setTextElements((prev) =>
+      prev.map((el) => (el.id === id ? { ...el, ...newProps } : el))
+    );
+  };
+
+  const deleteTextElement = (id: string) => {
+    setTextElements((prev) => prev.filter((el) => el.id !== id));
+  };
+
+  const duplicateTextElement = (id: string) => {
+    const originalElement = textElements.find(el => el.id === id);
+    if (originalElement) {
+      const newElement = {
+        ...originalElement,
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 15),
+        positionX: Math.min(100, originalElement.positionX + 5),
+        positionY: Math.min(100, originalElement.positionY + 5),
+      };
+      setTextElements(prev => [...prev, newElement]);
+    }
+  };
+
   const drawCompositeImage = useCallback(() => {
-    if (!canvasRef.current || !canvasReady || !imageSrc || !processedImageSrc)
-      return;
+    if (!canvasRef.current || !canvasReady || !imageSrc) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const bgImg = new Image();
+    const loadOriginalImage = new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error(`Failed to load original image: ${String(err)}`));
+        img.src = imageSrc;
+    });
 
-    bgImg.onload = () => {
-      // Set fixed canvas dimensions for consistent layout
-      const maxWidth = 800;
-      const maxHeight = 600;
-      const aspectRatio = bgImg.width / bgImg.height;
+    const loadProcessedImage = new Promise<HTMLImageElement | null>((resolve, reject) => {
+        if (!processedImageSrc) {
+            resolve(null);
+            return;
+        }
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error(`Failed to load processed image: ${String(err)}`));
+        img.src = processedImageSrc;
+    });
 
-      let canvasWidth = maxWidth;
-      let canvasHeight = maxWidth / aspectRatio;
+    Promise.all([loadOriginalImage, loadProcessedImage])
+        .then(([originalImg, processedImg]) => {
+            const maxWidth = 800; 
+            const maxHeight = 600;
+            const aspectRatio = originalImg.width / originalImg.height;
 
-      if (canvasHeight > maxHeight) {
-        canvasHeight = maxHeight;
-        canvasWidth = maxHeight * aspectRatio;
-      }
+            let canvasWidth = originalImg.width;
+            let canvasHeight = originalImg.height;
 
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+            if (canvasWidth > maxWidth) {
+                canvasWidth = maxWidth;
+                canvasHeight = canvasWidth / aspectRatio;
+            }
+            if (canvasHeight > maxHeight) {
+                canvasHeight = maxHeight;
+                canvasWidth = canvasHeight * aspectRatio;
+            }
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
 
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw background image with opacity
-      ctx.globalAlpha = backgroundOpacity / 100;
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = 1;
+            // 1. Draw background image
+            ctx.filter = `brightness(${imageBrightness}%) contrast(${imageContrast}%)`;
+            ctx.globalAlpha = backgroundOpacity / 100;
+            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none';
+            ctx.globalAlpha = 1; 
 
-      let preset = presets.style1;
-      switch (selectedStyle) {
-        case "style2":
-          preset = presets.style2;
-          break;
-        case "style3":
-          preset = presets.style3;
-          break;
-      }
+            // 2. Draw text elements
+            textElements.forEach((textEl) => {
+                ctx.save();
+                const x = canvas.width * (textEl.positionX / 100);
+                const y = canvas.height * (textEl.positionY / 100);
+                
+                ctx.translate(x, y);
+                ctx.rotate((textEl.rotation * Math.PI) / 180);
+                
+                let selectFont = textEl.fontFamily;
+                if (textEl.fontFamily === "inter" && inter?.style?.fontFamily) {
+                  selectFont = inter.style.fontFamily;
+                } else if (textEl.fontFamily === "domine" && domine?.style?.fontFamily) {
+                  selectFont = domine.style.fontFamily;
+                }
 
-      ctx.save();
+                ctx.font = `${textEl.fontWeight} ${textEl.fontSize}px ${selectFont}`;
+                if ("letterSpacing" in ctx && typeof (ctx as any).letterSpacing === 'string') {
+                    (ctx as any).letterSpacing = `${textEl.letterSpacing}px`;
+                }
+                
+                ctx.fillStyle = textEl.color;
+                ctx.globalAlpha = textEl.opacity / 100;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                ctx.fillText(textEl.content, 0, 0);
+                ctx.restore();
+            });
 
-      // Calculate font size to fill image 90% of the canvas
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      let fontSize = 100;
-      let selectFont = "arial";
-      switch (font) {
-        case "inter":
-          selectFont = inter.style.fontFamily;
-          break;
-        case "domine":
-          selectFont = domine.style.fontFamily;
-          break;
-      }
-
-      // Apply font weight and letter spacing
-      ctx.font = `${fontWeight} ${fontSize}px ${selectFont}`;
-      if ("letterSpacing" in ctx) {
-        ctx.letterSpacing = `${letterSpacing}px`;
-      }
-
-      const textWidth = ctx.measureText(text).width;
-      const targetWidth = canvas.width * 0.9;
-
-      fontSize *= targetWidth / textWidth;
-      ctx.font = `${fontWeight} ${fontSize}px ${selectFont}`;
-      if ("letterSpacing" in ctx) {
-        ctx.letterSpacing = `${letterSpacing}px`;
-      }
-
-      ctx.fillStyle = preset.color;
-      ctx.globalAlpha = textOpacity / 100;
-
-      // Calculate position based on percentage
-      const x = canvas.width * (positionX / 100);
-      const y = canvas.height * (positionY / 100);
-
-      ctx.translate(x, y);
-
-      // Apply rotation
-      ctx.rotate((rotation * Math.PI) / 180);
-
-      ctx.fillText(text, 0, 0);
-      ctx.restore();
-
-      const fgImg = new Image();
-      fgImg.onload = () => {
-        ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
-      };
-
-      fgImg.src = processedImageSrc;
-    };
-
-    bgImg.src = imageSrc;
+            // 3. Draw processed image on top
+            if (processedImg) {
+                ctx.globalAlpha = 1; 
+                ctx.drawImage(processedImg, 0, 0, canvas.width, canvas.height);
+            }
+        })
+        .catch(error => {
+            console.error("Error during canvas drawing:", error);
+            if (ctx && canvas) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(200,0,0,0.1)";
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = "red";
+                ctx.font = "bold 16px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                const errorMessage = error instanceof Error ? error.message : "Image loading/drawing error.";
+                const lines = errorMessage.split(': '); // Basic split for potentially long messages
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvas.width / 2, canvas.height / 2 + (index * 20) - (lines.length-1)*10);
+                });
+            }
+        });
   }, [
-    canvasReady,
-    imageSrc,
-    processedImageSrc,
-    selectedStyle,
-    font,
-    fontWeight,
-    letterSpacing,
-    textOpacity,
-    positionX,
-    positionY,
-    rotation,
-    backgroundOpacity,
-    text,
+    canvasReady, imageSrc, processedImageSrc, textElements,
+    backgroundOpacity, imageBrightness, imageContrast
   ]);
 
   useEffect(() => {
-    if (canvasReady) {
+    if (canvasReady && imageSrc) {
       drawCompositeImage();
     }
-  }, [canvasReady, drawCompositeImage]);
+  }, [canvasReady, imageSrc, drawCompositeImage]);
 
   const handleDownload = async () => {
     if (canvasRef.current) {
       const link = document.createElement("a");
       link.download = "thumbnail.png";
-      link.href = canvasRef.current.toDataURL();
+      link.href = canvasRef.current.toDataURL("image/png");
       link.click();
     }
   };
 
-  const resetControls = () => {
-    setPositionX(50);
-    setPositionY(50);
-    setTextOpacity(100);
-    setLetterSpacing(0);
-    setFontWeight(700);
-    setRotation(0);
+  const resetAllControls = () => {
+    setTextElements([{ ...initialTextElement, id: Date.now().toString() + Math.random().toString(36).substring(2, 15) }]);
     setBackgroundOpacity(100);
-    setText("POV");
+    setImageBrightness(100);
+    setImageContrast(100);
   };
 
+  const resetImageAndCanvas = async () => {
+    setImageSrc(null);
+    setProcessedImageSrc(null);
+    setCanvasReady(false);
+    setTextElements([]);
+    resetAllControls();
+    await refresh();
+  }
+
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen w-full">
       {imageSrc ? (
         <>
           {loading ? (
-            <div className="flex flex-col justify-center h-3/4 mt-10">
+            <div className="flex flex-col justify-center items-center h-3/4 mt-10">
               <SkeletonCard />
               <div className="flex flex-row justify-center items-center mt-2">
                 <Loader2 className="animate-spin h-4 w-4 text-gray-500 mr-2" />
-                <p className="text-muted-foreground"> {" "}
-                  Processing your image ...
-                </p>
+                <p className="text-muted-foreground">Processing your image...</p>
               </div>
             </div>
           ) : (
-            <div className=" p-2 space-y-6">
-              {/* Header */}
-
-              <div className="flex items-center justify-between">
+            <div className="p-2 md:p-2 space-y-2 md:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
                 <Button
                   variant="ghost"
-                  onClick={async () => {
-                    setImageSrc(null);
-                    setProcessedImageSrc(null);
-                    setCanvasReady(false);
-                    resetControls();
-                    await refresh();
-                  }}
-                  className="flex items-center gap-2"
+                  onClick={resetImageAndCanvas}
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Go back
+                  Leave Editor
                 </Button>
-
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={resetControls}>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <Button variant="outline" onClick={resetAllControls} className="flex-grow sm:flex-grow-0">
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Reset
                   </Button>
-                  <Button onClick={handleDownload}>
+                  <Button onClick={handleDownload} className="flex-grow sm:flex-grow-0">
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
                 </div>
               </div>
-              {/* Main Content */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
-                {/* Canvas Section */}
-                <div className="lg:col-span-2">
-                  <Card>
-                    <CardContent>
-                      <div className="flex justify-center">
-                        <AspectRatio ratio={4 / 3} className="w-full max-w-3xl">
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-3">
+                <div className="lg:col-span-8">
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-1">
+                      <div className="flex justify-center items-center bg-gray-100 dark:bg-gray-800 rounded-md">
+                        <AspectRatio ratio={16 / 9} className="w-full">
                           <canvas
                             ref={canvasRef}
-                            className="w-full h-full object-contain rounded-lg border"
+                            className="w-full h-full object-contain rounded-md"
                           />
                         </AspectRatio>
                       </div>
@@ -301,254 +332,133 @@ const ThumbnailCreator = () => {
                   </Card>
                 </div>
 
-                {/* Controls Section */}
-                <div className="space-y-4">
-                  <Tabs defaultValue="text" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger
-                        value="text"
-                        className="flex items-center gap-2"
-                      >
-                        <Type className="h-4 w-4" />
-                        Text
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="image"
-                        className="flex items-center gap-2"
-                      >
-                        <ImageIcon className="h-4 w-4" />
-                        Image
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="settings"
-                        className="flex items-center gap-2"
-                      >
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </TabsTrigger>
-                    </TabsList>
+                {/* MODIFIED Controls Section for Width Issue */}
+                <div className="lg:col-span-4 min-w-0"> {/* Crucial for width control */}
+                  <ScrollArea className="h-50 lg:h-[calc(100vh-300px)] rounded-md border">
+                    <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden"> {/* Rigorous constraining */}
+                      <Tabs defaultValue="text" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                          <TabsTrigger value="text" className="flex items-center gap-2">
+                            <Type className="h-7 w-7" /> Text
+                          </TabsTrigger>
+                          <TabsTrigger value="image" className="flex items-center gap-2 ml-4">
+                            <ImageIcon className="h-7 w-7" /> Image
+                          </TabsTrigger>
+                        </TabsList>
 
-                    {/* Text Tab */}
-                    <TabsContent value="text" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Type className="h-5 w-5" />
-                            Text Settings
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="text">Text Content</Label>
-                            <Input
-                              id="text"
-                              value={text}
-                              onChange={(e) => setText(e.target.value)}
-                              placeholder="Enter your text"
-                            />
-                          </div>
+                        <TabsContent value="text" className="mt-4 w-full">
+                          <Button onClick={addNewText} className="w-full">
+                            <PlusCircle className="h-4 w-4 mr-2" /> Add New Text
+                          </Button>
+                          <Accordion type="multiple" className="w-full space-y-2 mt-4">
+                            {textElements.map((el, index) => (
+                              <AccordionItem value={el.id} key={el.id} className="border bg-card p-2 rounded-md">
+                                <AccordionTrigger className="text-sm hover:no-underline px-2 py-3">
+                                  Text {index + 1}: &quot;{el.content.substring(0,15)}{el.content.length > 15 ? '...' : ''}&quot;
+                                </AccordionTrigger>
+                                <AccordionContent className="space-y-4 px-3 pt-3">
+                                  {/* Text Controls Start */}
+                                  <div className="space-y-1">
+                                    <Label htmlFor={`text-content-${el.id}`}>Text</Label>
+                                    <Input id={`text-content-${el.id}`} value={el.content} onChange={(e) => updateTextElement(el.id, { content: e.target.value })} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label htmlFor={`font-family-${el.id}`}>Font</Label>
+                                    <Select value={el.fontFamily} onValueChange={(value) => updateTextElement(el.id, { fontFamily: value })}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="arial">Arial</SelectItem>
+                                        <SelectItem value="inter">Inter</SelectItem>
+                                        <SelectItem value="domine">Domine</SelectItem>
+                                        <SelectItem value="impact">Impact</SelectItem>
+                                        <SelectItem value="verdana">Verdana</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Font Size <span className="text-xs text-muted-foreground">{el.fontSize}px</span></Label>
+                                    <Slider value={[el.fontSize]} onValueChange={(v) => updateTextElement(el.id, { fontSize: v[0] })} min={10} max={300} step={1} /> {/* Max font size increased slightly */}
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Font Weight <span className="text-xs text-muted-foreground">{el.fontWeight}</span></Label>
+                                    <Slider value={[el.fontWeight]} onValueChange={(v) => updateTextElement(el.id, { fontWeight: v[0] })} min={100} max={900} step={100} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between" htmlFor={`text-color-${el.id}`}>Color</Label>
+                                    <div className="flex items-center gap-2">
+                                      <Input type="color" id={`text-color-${el.id}`} value={el.color.startsWith('rgba') ? '#ffffff' : el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} className="p-0 h-8 w-12"/>
+                                      <Input value={el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} placeholder="rgba(R,G,B,A) or #hex"/>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Opacity <span className="text-xs text-muted-foreground">{el.opacity}%</span></Label>
+                                    <Slider value={[el.opacity]} onValueChange={(v) => updateTextElement(el.id, { opacity: v[0] })} min={0} max={100} step={1} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Rotation <span className="text-xs text-muted-foreground">{el.rotation}°</span></Label>
+                                    <Slider value={[el.rotation]} onValueChange={(v) => updateTextElement(el.id, { rotation: v[0] })} min={-180} max={180} step={1} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Horizontal Pos. <span className="text-xs text-muted-foreground">{el.positionX}%</span></Label>
+                                    <Slider value={[el.positionX]} onValueChange={(v) => updateTextElement(el.id, { positionX: v[0] })} min={0} max={100} step={1} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Vertical Pos. <span className="text-xs text-muted-foreground">{el.positionY}%</span></Label>
+                                    <Slider value={[el.positionY]} onValueChange={(v) => updateTextElement(el.id, { positionY: v[0] })} min={0} max={100} step={1} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="flex items-center justify-between">Letter Spacing <span className="text-xs text-muted-foreground">{el.letterSpacing}px</span></Label>
+                                    <Slider value={[el.letterSpacing]} onValueChange={(v) => updateTextElement(el.id, { letterSpacing: v[0] })} min={-20} max={50} step={1} /> {/* Letter spacing range adjusted */}
+                                  </div>
+                                  <Separator className="my-3"/>
+                                  <div className="flex gap-2 justify-end">
+                                      <Button variant="outline" size="sm" onClick={() => duplicateTextElement(el.id)}><Copy size={14} className="mr-1"/> Duplicate</Button>
+                                      <Button variant="destructive" size="sm" onClick={() => deleteTextElement(el.id)}><Trash2 size={14} className="mr-1"/> Delete</Button>
+                                  </div>
+                                  {/* Text Controls End */}
+                                </AccordionContent>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                          {textElements.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No text elements added. Click &quot;Add New Text&quot; to begin.</p>}
+                        </TabsContent>
 
-                          <div className="space-y-2">
-                            <Label htmlFor="font">Font Family</Label>
-                            <Select value={font} onValueChange={setFont}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="arial">Arial</SelectItem>
-                                <SelectItem value="inter">Inter</SelectItem>
-                                <SelectItem value="domine">Domine</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <Separator />
-
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Font Weight
-                              <span className="text-sm text-muted-foreground">
-                                {fontWeight}
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[fontWeight]}
-                              onValueChange={(value) =>
-                                setFontWeight(value[0] ?? 700)
-                              }
-                              max={900}
-                              min={100}
-                              step={100}
-                            />
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Letter Spacing
-                              <span className="text-sm text-muted-foreground">
-                                {letterSpacing}px
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[letterSpacing]}
-                              onValueChange={(value) =>
-                                setLetterSpacing(value[0] ?? 0)
-                              }
-                              max={50}
-                              min={-10}
-                              step={1}
-                            />
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Text Opacity
-                              <span className="text-sm text-muted-foreground">
-                                {textOpacity}%
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[textOpacity]}
-                              onValueChange={(value) =>
-                                setTextOpacity(value[0] ?? 100)
-                              }
-                              max={100}
-                              min={0}
-                              step={1}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-
-                    {/* Image Tab */}
-                    <TabsContent value="image" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <ImageIcon className="h-5 w-5" />
-                            Image Settings
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Background Opacity
-                              <span className="text-sm text-muted-foreground">
-                                {backgroundOpacity}%
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[backgroundOpacity]}
-                              onValueChange={(value) =>
-                                setBackgroundOpacity(value[0] ?? 100)
-                              }
-                              max={100}
-                              min={0}
-                              step={1}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-
-                    {/* Settings Tab */}
-                    <TabsContent value="settings" className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Move className="h-5 w-5" />
-                            Position & Transform
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Horizontal Position
-                              <span className="text-sm text-muted-foreground">
-                                {positionX}%
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[positionX]}
-                              onValueChange={(value) =>
-                                setPositionX(value[0] ?? 50)
-                              }
-                              max={100}
-                              min={0}
-                              step={1}
-                            />
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              Vertical Position
-                              <span className="text-sm text-muted-foreground">
-                                {positionY}%
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[positionY]}
-                              onValueChange={(value) =>
-                                setPositionY(value[0] ?? 50)
-                              }
-                              max={100}
-                              min={0}
-                              step={1}
-                            />
-                          </div>
-
-                          <Separator />
-
-                          <div className="space-y-3">
-                            <Label className="flex items-center justify-between">
-                              <span className="flex items-center gap-2">
-                                <RotateCw className="h-4 w-4" />
-                                Rotation
-                              </span>
-                              <span className="text-sm text-muted-foreground">
-                                {rotation}°
-                              </span>
-                            </Label>
-                            <Slider
-                              value={[rotation]}
-                              onValueChange={(value) =>
-                                setRotation(value[0] ?? 0)
-                              }
-                              max={180}
-                              min={-180}
-                              step={1}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-                  </Tabs>
+                        <TabsContent value="image" className="mt-4 w-full">
+                          <Card>
+                            <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5" /> Image Settings</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                              <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Brightness <span className="text-xs text-muted-foreground">{imageBrightness}%</span></Label>
+                                <Slider value={[imageBrightness]} onValueChange={(v) => setImageBrightness(v[0])} min={0} max={200} step={1} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Contrast <span className="text-xs text-muted-foreground">{imageContrast}%</span></Label>
+                                <Slider value={[imageContrast]} onValueChange={(v) => setImageContrast(v[0])} min={0} max={200} step={1} />
+                              </div>
+                              {/* <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Background Opacity <span className="text-xs text-muted-foreground">{backgroundOpacity}%</span></Label>
+                                <Slider value={[backgroundOpacity]} onValueChange={(v) => setBackgroundOpacity(v[0])} min={0} max={100} step={1} />
+                              </div> */}
+                            </CardContent>
+                          </Card>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </ScrollArea>
                 </div>
               </div>
             </div>
           )}
         </>
       ) : (
-        <div className="flex flex-col mt-20">
-          <div className=" flex flex-col items-center justify-between gap-10 md:flex-row md:items-start">
-            <Style
-              image="/style1.png"
-              selectStyle={() => setSelectedStyle("style1")}
-              isSelected={selectedStyle === "style1"}
-            />
-            <Style
-              image="/style2.png"
-              selectStyle={() => setSelectedStyle("style2")}
-              isSelected={selectedStyle === "style2"}
-            />
-            <Style
-              image="/style3.png"
-              selectStyle={() => setSelectedStyle("style3")}
-              isSelected={selectedStyle === "style3"}
-            />
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-300px)] px-4">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">Create Your Design</h1>
+            <p className="text-muted-foreground">Start by uploading an image.</p>
           </div>
-          <Dropzone setSelectedImage={setSelectedImage} />
+          <div className="w-full max-w-lg">
+            <Dropzone setSelectedImage={setSelectedImage} />
+          </div>
         </div>
       )}
     </div>

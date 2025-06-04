@@ -22,19 +22,19 @@ export default async function Layout({
   }
 
   return (
-    <div className="flex h-screen w-full flex-col items-center overflow-y-scroll relative">
+    <div className="flex h-screen w-full flex-col items-center">
       <div
         className={cn(
           "absolute inset-0 z-[-1] bg-gray-100 dark:bg-gray-900",
           "absolute inset-0",
-          "[background-size:20px_20px]",
+          "[background-size:50px_50px]",
           "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
           "dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
         )}
       />
       {/* Navbar */}
       <nav className="w-full">
-        <div className="mx-auto flex max-w-7xl items-center justify-end px-4 py-4">
+        <div className="mx-auto flex items-center justify-end px-4 py-4">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" asChild>
               <p className="text-sm text-muted-foreground">
@@ -48,7 +48,10 @@ export default async function Layout({
           </div>
         </div>
       </nav>
+      {/* Main content */}
+      <main className="flex w-full max-w-7xl flex-1 flex-col items-center px-2 py-5">
       {children}
+      </main>
     </div>
   );
 }

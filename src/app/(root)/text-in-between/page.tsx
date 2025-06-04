@@ -25,8 +25,8 @@ const EditorPage = async () => {
   }
 
   return (
-    <div className="flex h-screen max-w-full items-center justify-center px-4 md:min-w-6xl md:px-0">
-      <div className="flex max-w-full flex-col gap-10">
+    <div className="flex h-screen w-full items-center justify-center px-4 md:px-0">
+      <div className="flex max-w-full flex-col gap-6">
         {convexUser?.credits === 0 ? (
           <div>
             <Link className="flex items-center gap-2" href="/">
@@ -65,7 +65,7 @@ const EditorPage = async () => {
             </Card>
           </div>
         ) : (
-          <main className="mt-10">
+          <main className="mt-0 md:mt-7">
             <ThumbnailCreator/>
           </main>
         )}
