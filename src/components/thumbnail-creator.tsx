@@ -334,7 +334,7 @@ const ThumbnailCreator = () => {
 
                 {/* MODIFIED Controls Section for Width Issue */}
                 <div className="lg:col-span-4 min-w-0"> {/* Crucial for width control */}
-                  <ScrollArea className="h-50 lg:h-[calc(100vh-300px)] rounded-md border">
+                  <ScrollArea className="h-70 lg:h-[calc(100vh-300px)] rounded-md border">
                     <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden"> {/* Rigorous constraining */}
                       <Tabs defaultValue="text" className="w-full">
                         <TabsList className="grid w-full grid-cols-4">
