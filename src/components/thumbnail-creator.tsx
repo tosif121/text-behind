@@ -8,18 +8,10 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { AspectRatio } from "./ui/aspect-ratio";
 import { Separator } from "./ui/separator";
-import { inter, domine } from "@/app/fonts"; 
 import { generate, refresh } from "@/app/actions/generate";
 import {
   Accordion,
@@ -40,6 +32,7 @@ import {
   Copy,
 } from "lucide-react";
 import { SkeletonCard } from "./SkeletonCard";
+import FontFamilyPicker from "./font-picker";
 
 interface TextElement {
   id: string;
@@ -57,7 +50,7 @@ interface TextElement {
 
 const initialTextElement: Omit<TextElement, "id"> = {
   content: "POV",
-  fontFamily: "arial",
+  fontFamily: "Roboto",
   fontSize: 200,
   fontWeight: 700,
   color: "rgba(255, 255, 255, 1)",
@@ -79,6 +72,26 @@ const ThumbnailCreator = () => {
   const [imageBrightness, setImageBrightness] = useState(100);
   const [imageContrast, setImageContrast] = useState(100);
 
+useEffect(() => {
+  const fonts = textElements
+    .map(el => el.fontFamily)
+    .filter((f, i, self) => self.indexOf(f) === i);
+
+  if (fonts.length > 0 && typeof window !== 'undefined') {
+    import('webfontloader').then(WebFont => {
+      WebFont.load({
+        google: {
+          families: fonts,
+        },
+        active: () => {
+          drawCompositeImage();
+        },
+      });
+    });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [textElements.map(el => el.fontFamily).join(',')]);
+
   const setSelectedImage = async (file?: File) => {
     if (file) {
       setLoading(true);
@@ -92,7 +105,7 @@ const ThumbnailCreator = () => {
           setProcessedImageSrc(processedUrl);
         } catch (error) {
           console.error("Error removing background:", error);
-          setProcessedImageSrc(null); 
+          setProcessedImageSrc(null);
         }
         setCanvasReady(true);
         if (textElements.length === 0) {
@@ -116,6 +129,10 @@ const ThumbnailCreator = () => {
     setTextElements((prev) =>
       prev.map((el) => (el.id === id ? { ...el, ...newProps } : el))
     );
+  };
+
+  const handleAttributeChange = (id: string, attribute: string, value: string | number) => {
+    updateTextElement(id, { [attribute]: value });
   };
 
   const deleteTextElement = (id: string) => {
@@ -143,108 +160,101 @@ const ThumbnailCreator = () => {
     if (!ctx) return;
 
     const loadOriginalImage = new Promise<HTMLImageElement>((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = (err) => reject(new Error(`Failed to load original image: ${String(err)}`));
-        img.src = imageSrc;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(new Error(`Failed to load original image: ${String(err)}`));
+      img.src = imageSrc;
     });
 
     const loadProcessedImage = new Promise<HTMLImageElement | null>((resolve, reject) => {
-        if (!processedImageSrc) {
-            resolve(null);
-            return;
-        }
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = (err) => reject(new Error(`Failed to load processed image: ${String(err)}`));
-        img.src = processedImageSrc;
+      if (!processedImageSrc) {
+        resolve(null);
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(new Error(`Failed to load processed image: ${String(err)}`));
+      img.src = processedImageSrc;
     });
 
     Promise.all([loadOriginalImage, loadProcessedImage])
-        .then(([originalImg, processedImg]) => {
-            const maxWidth = 800; 
-            const maxHeight = 600;
-            const aspectRatio = originalImg.width / originalImg.height;
+      .then(([originalImg, processedImg]) => {
+        const maxWidth = 800;
+        const maxHeight = 600;
+        const aspectRatio = originalImg.width / originalImg.height;
 
-            let canvasWidth = originalImg.width;
-            let canvasHeight = originalImg.height;
+        let canvasWidth = originalImg.width;
+        let canvasHeight = originalImg.height;
 
-            if (canvasWidth > maxWidth) {
-                canvasWidth = maxWidth;
-                canvasHeight = canvasWidth / aspectRatio;
-            }
-            if (canvasHeight > maxHeight) {
-                canvasHeight = maxHeight;
-                canvasWidth = canvasHeight * aspectRatio;
-            }
-            
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+        if (canvasWidth > maxWidth) {
+          canvasWidth = maxWidth;
+          canvasHeight = canvasWidth / aspectRatio;
+        }
+        if (canvasHeight > maxHeight) {
+          canvasHeight = maxHeight;
+          canvasWidth = canvasHeight * aspectRatio;
+        }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
 
-            // 1. Draw background image
-            ctx.filter = `brightness(${imageBrightness}%) contrast(${imageContrast}%)`;
-            ctx.globalAlpha = backgroundOpacity / 100;
-            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
-            ctx.filter = 'none';
-            ctx.globalAlpha = 1; 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Draw text elements
-            textElements.forEach((textEl) => {
-                ctx.save();
-                const x = canvas.width * (textEl.positionX / 100);
-                const y = canvas.height * (textEl.positionY / 100);
-                
-                ctx.translate(x, y);
-                ctx.rotate((textEl.rotation * Math.PI) / 180);
-                
-                let selectFont = textEl.fontFamily;
-                if (textEl.fontFamily === "inter" && inter?.style?.fontFamily) {
-                  selectFont = inter.style.fontFamily;
-                } else if (textEl.fontFamily === "domine" && domine?.style?.fontFamily) {
-                  selectFont = domine.style.fontFamily;
-                }
+        // 1. Draw background image
+        ctx.filter = `brightness(${imageBrightness}%) contrast(${imageContrast}%)`;
+        ctx.globalAlpha = backgroundOpacity / 100;
+        ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+        ctx.filter = 'none';
+        ctx.globalAlpha = 1;
 
-                ctx.font = `${textEl.fontWeight} ${textEl.fontSize}px ${selectFont}`;
-                if ("letterSpacing" in ctx && typeof (ctx as any).letterSpacing === 'string') {
-                    (ctx as any).letterSpacing = `${textEl.letterSpacing}px`;
-                }
-                
-                ctx.fillStyle = textEl.color;
-                ctx.globalAlpha = textEl.opacity / 100;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                
-                ctx.fillText(textEl.content, 0, 0);
-                ctx.restore();
-            });
+        // 2. Draw text elements
+        textElements.forEach((textEl) => {
+          ctx.save();
+          const x = canvas.width * (textEl.positionX / 100);
+          const y = canvas.height * (textEl.positionY / 100);
 
-            // 3. Draw processed image on top
-            if (processedImg) {
-                ctx.globalAlpha = 1; 
-                ctx.drawImage(processedImg, 0, 0, canvas.width, canvas.height);
-            }
-        })
-        .catch(error => {
-            console.error("Error during canvas drawing:", error);
-            if (ctx && canvas) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "rgba(200,0,0,0.1)";
-                ctx.fillRect(0,0,canvas.width, canvas.height);
-                ctx.fillStyle = "red";
-                ctx.font = "bold 16px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                const errorMessage = error instanceof Error ? error.message : "Image loading/drawing error.";
-                const lines = errorMessage.split(': '); // Basic split for potentially long messages
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, canvas.width / 2, canvas.height / 2 + (index * 20) - (lines.length-1)*10);
-                });
-            }
+          ctx.translate(x, y);
+          ctx.rotate((textEl.rotation * Math.PI) / 180);
+
+          ctx.font = `${textEl.fontWeight} ${textEl.fontSize}px "${textEl.fontFamily}"`;
+          if ("letterSpacing" in ctx && typeof (ctx as any).letterSpacing === 'string') {
+            (ctx as any).letterSpacing = `${textEl.letterSpacing}px`;
+          }
+
+          ctx.fillStyle = textEl.color;
+          ctx.globalAlpha = textEl.opacity / 100;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          ctx.fillText(textEl.content, 0, 0);
+          ctx.restore();
         });
+
+        // 3. Draw processed image on top
+        if (processedImg) {
+          ctx.globalAlpha = 1;
+          ctx.drawImage(processedImg, 0, 0, canvas.width, canvas.height);
+        }
+      })
+      .catch(error => {
+        console.error("Error during canvas drawing:", error);
+        if (ctx && canvas) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "rgba(200,0,0,0.1)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "red";
+          ctx.font = "bold 16px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const errorMessage = error instanceof Error ? error.message : "Image loading/drawing error.";
+          const lines = errorMessage.split(': ');
+          lines.forEach((line, index) => {
+            ctx.fillText(line, canvas.width / 2, canvas.height / 2 + (index * 20) - (lines.length - 1) * 10);
+          });
+        }
+      });
   }, [
     canvasReady, imageSrc, processedImageSrc, textElements,
     backgroundOpacity, imageBrightness, imageContrast
@@ -290,7 +300,7 @@ const ThumbnailCreator = () => {
               <SkeletonCard />
               <div className="flex flex-row justify-center items-center mt-2">
                 <Loader2 className="animate-spin h-4 w-4 text-gray-500 mr-2" />
-                <p className="text-muted-foreground">Processing your image...</p>
+                <p className="text-muted-foreground">Processing image...</p>
               </div>
             </div>
           ) : (
@@ -332,17 +342,16 @@ const ThumbnailCreator = () => {
                   </Card>
                 </div>
 
-                {/* MODIFIED Controls Section for Width Issue */}
-                <div className="lg:col-span-4 min-w-0"> {/* Crucial for width control */}
-                  <ScrollArea className="h-70 lg:h-[calc(100vh-300px)] rounded-md border">
-                    <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden"> {/* Rigorous constraining */}
+                <div className="lg:col-span-4 min-w-0">
+                  <ScrollArea className="h-70 lg:h-[calc(100vh-250px)] rounded-md border">
+                    <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden">
                       <Tabs defaultValue="text" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-4 gap-1">
                           <TabsTrigger value="text" className="flex items-center gap-2">
                             <Type className="h-7 w-7" /> Text
                           </TabsTrigger>
-                          <TabsTrigger value="image" className="flex items-center gap-2 ml-4">
-                            <ImageIcon className="h-7 w-7" /> Image
+                          <TabsTrigger value="image" className="flex items-center gap-2">
+                            <ImageIcon className="h-7 w-7" /> Img
                           </TabsTrigger>
                         </TabsList>
 
@@ -354,30 +363,24 @@ const ThumbnailCreator = () => {
                             {textElements.map((el, index) => (
                               <AccordionItem value={el.id} key={el.id} className="border bg-card p-2 rounded-md">
                                 <AccordionTrigger className="text-sm hover:no-underline px-2 py-3">
-                                  Text {index + 1}: &quot;{el.content.substring(0,15)}{el.content.length > 15 ? '...' : ''}&quot;
+                                  Text {index + 1}: &quot;{el.content.substring(0, 15)}{el.content.length > 15 ? '...' : ''}&quot;
                                 </AccordionTrigger>
                                 <AccordionContent className="space-y-4 px-3 pt-3">
-                                  {/* Text Controls Start */}
                                   <div className="space-y-1">
                                     <Label htmlFor={`text-content-${el.id}`}>Text</Label>
                                     <Input id={`text-content-${el.id}`} value={el.content} onChange={(e) => updateTextElement(el.id, { content: e.target.value })} />
                                   </div>
                                   <div className="space-y-1">
-                                    <Label htmlFor={`font-family-${el.id}`}>Font</Label>
-                                    <Select value={el.fontFamily} onValueChange={(value) => updateTextElement(el.id, { fontFamily: value })}>
-                                      <SelectTrigger><SelectValue /></SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="arial">Arial</SelectItem>
-                                        <SelectItem value="inter">Inter</SelectItem>
-                                        <SelectItem value="domine">Domine</SelectItem>
-                                        <SelectItem value="impact">Impact</SelectItem>
-                                        <SelectItem value="verdana">Verdana</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <Label>Font Family</Label>
+                                    <FontFamilyPicker
+                                      attribute="fontFamily"
+                                      currentFont={el.fontFamily}
+                                      handleAttributeChange={(attribute, value) => handleAttributeChange(el.id, attribute, value)}
+                                    />
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Font Size <span className="text-xs text-muted-foreground">{el.fontSize}px</span></Label>
-                                    <Slider value={[el.fontSize]} onValueChange={(v) => updateTextElement(el.id, { fontSize: v[0] })} min={10} max={300} step={1} /> {/* Max font size increased slightly */}
+                                    <Slider value={[el.fontSize]} onValueChange={(v) => updateTextElement(el.id, { fontSize: v[0] })} min={10} max={300} step={1} />
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Font Weight <span className="text-xs text-muted-foreground">{el.fontWeight}</span></Label>
@@ -386,8 +389,8 @@ const ThumbnailCreator = () => {
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between" htmlFor={`text-color-${el.id}`}>Color</Label>
                                     <div className="flex items-center gap-2">
-                                      <Input type="color" id={`text-color-${el.id}`} value={el.color.startsWith('rgba') ? '#ffffff' : el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} className="p-0 h-8 w-12"/>
-                                      <Input value={el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} placeholder="rgba(R,G,B,A) or #hex"/>
+                                      <Input type="color" id={`text-color-${el.id}`} value={el.color.startsWith('rgba') ? '#ffffff' : el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} className="p-0 h-8 w-12" />
+                                      <Input value={el.color} onChange={(e) => updateTextElement(el.id, { color: e.target.value })} placeholder="rgba(R,G,B,A) or #hex" />
                                     </div>
                                   </div>
                                   <div className="space-y-1">
@@ -408,14 +411,13 @@ const ThumbnailCreator = () => {
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Letter Spacing <span className="text-xs text-muted-foreground">{el.letterSpacing}px</span></Label>
-                                    <Slider value={[el.letterSpacing]} onValueChange={(v) => updateTextElement(el.id, { letterSpacing: v[0] })} min={-20} max={50} step={1} /> {/* Letter spacing range adjusted */}
+                                    <Slider value={[el.letterSpacing]} onValueChange={(v) => updateTextElement(el.id, { letterSpacing: v[0] })} min={-20} max={50} step={1} />
                                   </div>
-                                  <Separator className="my-3"/>
+                                  <Separator className="my-3" />
                                   <div className="flex gap-2 justify-end">
-                                      <Button variant="outline" size="sm" onClick={() => duplicateTextElement(el.id)}><Copy size={14} className="mr-1"/> Duplicate</Button>
-                                      <Button variant="destructive" size="sm" onClick={() => deleteTextElement(el.id)}><Trash2 size={14} className="mr-1"/> Delete</Button>
+                                    <Button variant="outline" size="sm" onClick={() => duplicateTextElement(el.id)}><Copy size={14} className="mr-1" /> Duplicate</Button>
+                                    <Button variant="destructive" size="sm" onClick={() => deleteTextElement(el.id)}><Trash2 size={14} className="mr-1" /> Delete</Button>
                                   </div>
-                                  {/* Text Controls End */}
                                 </AccordionContent>
                               </AccordionItem>
                             ))}
@@ -435,10 +437,6 @@ const ThumbnailCreator = () => {
                                 <Label className="flex items-center justify-between">Contrast <span className="text-xs text-muted-foreground">{imageContrast}%</span></Label>
                                 <Slider value={[imageContrast]} onValueChange={(v) => setImageContrast(v[0])} min={0} max={200} step={1} />
                               </div>
-                              {/* <div className="space-y-1">
-                                <Label className="flex items-center justify-between">Background Opacity <span className="text-xs text-muted-foreground">{backgroundOpacity}%</span></Label>
-                                <Slider value={[backgroundOpacity]} onValueChange={(v) => setBackgroundOpacity(v[0])} min={0} max={100} step={1} />
-                              </div> */}
                             </CardContent>
                           </Card>
                         </TabsContent>
