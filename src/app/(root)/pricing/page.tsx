@@ -3,23 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { cn } from "@/lib/utils";
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen">
-      <div
-        className={cn(
-          "absolute inset-0 z-[-1] bg-gray-100 dark:bg-gray-900",
-          "absolute inset-0",
-          "[background-size:20px_20px]",
-          "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
-          "dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]"
-        )}
-      />
       <div className="container mx-auto px-2">
         {/* Pricing Card */}
-        <div className="max-w-sm mx-auto mt-10 md:mt-15">
+        <div className="max-w-sm mx-auto mt-11 ">
           <Link
             className="flex items-center gap-2 mb-2"
             href="/text-in-between"
@@ -29,7 +19,7 @@ export default function PricingPage() {
           </Link>
           <Card>
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl">Professional</CardTitle>
+              <CardTitle className="text-2xl">Creator</CardTitle>
               <div className="mt-3">
                 <span className="text-2xl font-bold">$3.5</span>
                 <span className="text-muted-foreground">/One Time</span>
@@ -39,7 +29,7 @@ export default function PricingPage() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">Create upto 50 designes</span>
+                  <span className="text-sm">Create upto 100 designs</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -47,15 +37,7 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">
-                    Access your recently created designes
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">
-                    Acess to new upcoming features
-                  </span>
+                  <span className="text-sm">Access to new features</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -78,9 +60,7 @@ export default function PricingPage() {
               <SignedOut>
                 <Button className="w-full" variant="default" size="lg" asChild>
                   <Link
-                    href={
-                      "/sign-in"
-                    }
+                    href={"/sign-in"}
                     className="flex items-center justify-center"
                   >
                     <span>Sign In to buy</span>
@@ -89,6 +69,13 @@ export default function PricingPage() {
               </SignedOut>
             </CardContent>
           </Card>
+          <p className="text-accent-foreground text-sm text-center mt-3">
+            Please use the same email
+          </p>
+          <p className="text-accent-foreground text-sm text-center">
+            You have registered with
+          </p>
+          <p className="text-accent-foreground text-sm text-center">while billing</p>
         </div>
       </div>
     </div>

@@ -75,7 +75,7 @@ export const addCreditsIfPaid = mutation({
     if (!user) throw new Error("User not found");
 
     await ctx.db.patch(user._id, {
-      credits: user.credits + 50, 
+      credits: user.credits + 100, 
       CustomerId: args.CustomerId,
       OrderId: args.OrderId,
     });

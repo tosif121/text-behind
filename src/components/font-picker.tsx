@@ -6,7 +6,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { ALL_FONTS } from '@/app/fonts';
-import { Carrot, Check } from 'lucide-react';
+import {Check, LetterTextIcon } from 'lucide-react';
 
 
 interface FontFamilyPickerProps {
@@ -20,7 +20,6 @@ const FontFamilyPicker: React.FC<FontFamilyPickerProps> = ({
   currentFont,
   handleAttributeChange
 }) => {
-  // This effect runs once when the component mounts to load all fonts for preview.
   useEffect(() => {
   if (typeof window !== "undefined" && ALL_FONTS?.length > 0) {
     import("webfontloader").then(WebFont => {
@@ -31,11 +30,11 @@ const FontFamilyPicker: React.FC<FontFamilyPickerProps> = ({
       });
     });
   }
-}, []);// Empty array ensures this effect runs only once
+}, []);
 
   return (
     <Popover>
-      <div className='flex flex-col items-start justify-start my-8'>
+      <div className='flex flex-col items-start justify-start my-2'>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -46,7 +45,7 @@ const FontFamilyPicker: React.FC<FontFamilyPickerProps> = ({
             )}
           >
             {currentFont ? currentFont : "Select font family"}
-            <Carrot className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <LetterTextIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
       </div>

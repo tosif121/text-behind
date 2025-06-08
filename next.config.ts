@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "f4l2c3q6cm.ufs.sh",
+      },
     ],
   },
   headers: async () => [

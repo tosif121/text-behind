@@ -311,16 +311,16 @@ useEffect(() => {
                   onClick={resetImageAndCanvas}
                   className="flex items-center gap-2 w-full sm:w-auto"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-3 w-3" />
                   Leave Editor
                 </Button>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <Button variant="outline" onClick={resetAllControls} className="flex-grow sm:flex-grow-0">
-                    <RotateCcw className="h-4 w-4 mr-2" />
+                    <RotateCcw className="h-3 w-3 mr-2" />
                     Reset
                   </Button>
                   <Button onClick={handleDownload} className="flex-grow sm:flex-grow-0">
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="h-3 w-3 mr-2" />
                     Download
                   </Button>
                 </div>
@@ -343,7 +343,7 @@ useEffect(() => {
                 </div>
 
                 <div className="lg:col-span-4 min-w-0">
-                  <ScrollArea className="h-70 lg:h-[calc(100vh-250px)] rounded-md border">
+                  <ScrollArea className="h-120 lg:h-[calc(100vh-250px)] rounded-md ">
                     <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden">
                       <Tabs defaultValue="text" className="w-full">
                         <TabsList className="grid w-full grid-cols-4 gap-1">
