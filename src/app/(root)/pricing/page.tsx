@@ -48,7 +48,7 @@ export default function PricingPage() {
                 <Button className="w-full" variant="default" size="lg" asChild>
                   <Link
                     href={
-                      "https://text-in-between-app.lemonsqueezy.com/buy/df46987d-787b-4f78-810e-4ec7815c6267"
+                      "https://text-in-between-app.lemonsqueezy.com/buy/43b1dc05-92a7-45ad-b7b1-c965fbad9dbf"
                     }
                     className="flex items-center justify-center"
                   >
