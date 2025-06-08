@@ -91,9 +91,9 @@ export default function Home() {
               <SignedOut>
                 <Button
                   asChild
-                  className="w-full bg-black text-white hover:bg-slate-800 sm:w-auto"
+                  className=" bg-black text-white hover:bg-slate-800 sm:w-auto"
                 >
-                  <SignInButton mode="modal">Get Started for Free</SignInButton>
+                  <SignInButton mode="modal">Get Started</SignInButton>
                 </Button>
               </SignedOut>
             </div>
