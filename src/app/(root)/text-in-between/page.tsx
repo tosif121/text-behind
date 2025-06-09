@@ -102,7 +102,7 @@ const EditorPage = async () => {
                   You have registered with
                 </p>
                 <p className="text-accent-foreground text-sm text-center">
-                  while billing
+                  when you go for billing
                 </p>
               </div>
             </div>
