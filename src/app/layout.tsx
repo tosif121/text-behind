@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Text-in-between",
-    absolute: "Text-in-between",
+    template: "%s - Text In Between",
+    absolute: "Text In between",
   },
   description:
-    "Create viral text in between designs easily.",
+    "Easily Put text in between the subject and the background of an image.",
 };
 
 export default function RootLayout({

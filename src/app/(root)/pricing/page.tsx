@@ -75,7 +75,7 @@ export default function PricingPage() {
           <p className="text-accent-foreground text-sm text-center">
             You have registered with
           </p>
-          <p className="text-accent-foreground text-sm text-center">while billing</p>
+          <p className="text-accent-foreground text-sm text-center">when you go for billing</p>
         </div>
       </div>
     </div>

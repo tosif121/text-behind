@@ -18,7 +18,7 @@ export const syncUser = mutation({
         userId: args.userId,
         email: args.email,
         name: args.name,
-        credits: 2,
+        credits: 10,
       });
     }
   },
