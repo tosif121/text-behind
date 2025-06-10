@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     template: "%s - Text In Between",
-    absolute: "Text In between",
+    absolute: "Text In Between",
   },
   description:
     "Easily Put text in between the subject and the background of an image.",

@@ -74,7 +74,7 @@ const Dropzone = ({
             strokeLinejoin="round"
           />
         </svg>
-        <p className="z-10 text-lg font-medium text-black">Upload file</p>
+        <p className="z-10 text-lg font-medium text-black">Upload Image</p>
       </motion.label>
     </div>
   );

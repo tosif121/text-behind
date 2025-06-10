@@ -21,7 +21,7 @@ export default function PricingPage() {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl">Creator</CardTitle>
               <div className="mt-3">
-                <span className="text-2xl font-bold">$3.5</span>
+                <span className="text-2xl font-bold">$3</span>
                 <span className="text-muted-foreground">/One Time</span>
               </div>
             </CardHeader>
@@ -69,13 +69,6 @@ export default function PricingPage() {
               </SignedOut>
             </CardContent>
           </Card>
-          <p className="text-accent-foreground text-sm text-center mt-3">
-            Please use the same email
-          </p>
-          <p className="text-accent-foreground text-sm text-center">
-            You have registered with
-          </p>
-          <p className="text-accent-foreground text-sm text-center">when you go for billing</p>
         </div>
       </div>
     </div>

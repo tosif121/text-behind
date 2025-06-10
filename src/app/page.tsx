@@ -75,10 +75,8 @@ export default function Home() {
               </span>{" "}
               designs
             </h1>
-            <p className="mx-auto pl-6 pr-6 md:p-0 mt-4 max-w-lg md:max-w-xl text-xs text-slate-600 md:text-lg">
-              The &quot;text-in-between&quot; designs are 🔥, but it&apos;s a
-              headache to create. This tool makes it effortless. No design
-              skills needed.
+            <p className="mx-auto pl-4 pr-4 md:p-0 mt-4 max-w-lg md:max-w-xl text-xs text-slate-600 md:text-lg">
+              Easily put text in between the subject and the background to an image. Create viral Youtube thumbnails and other social media posts.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
               <SignedIn>
