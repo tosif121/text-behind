@@ -3,18 +3,56 @@
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useState, DragEvent } from "react";
 
 const Dropzone = ({
   setSelectedImage,
 }: {
   setSelectedImage: (file?: File) => void;
 }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Handles the drag-over event to allow dropping
+  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  // Sets dragging state to true when a file enters the drop zone
+  const handleDragEnter = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  // Resets dragging state when a file leaves the drop zone
+  const handleDragLeave = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  // Processes the dropped file
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Ensure the dropped file is an image
+      if (files[0].type.startsWith("image/")) {
+        setSelectedImage(files[0]);
+      }
+    }
+  };
+
   return (
     <div>
       <Link className="flex items-center gap-2 mb-2" href="/">
-          <ArrowLeft className="h-4 w-4" />
-          <p className="leading-7">Go back</p>
-        </Link>
+        <ArrowLeft className="h-4 w-4" />
+        <p className="leading-7">Go back</p>
+      </Link>
       <input
         onChange={(e) => setSelectedImage(e.target.files?.[0])}
         className="hidden"
@@ -28,8 +66,16 @@ const Dropzone = ({
         whileHover={{ scale: 1.03, boxShadow: "0 8px 24px rgba(0,0,0,0.1)" }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="relative flex w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border border-black bg-white px-10 py-12 transition-shadow hover:shadow-md hover:shadow-gray-400"
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
-        <div className="pointer-events-none absolute inset-2 rounded-xl border-2 border-dashed border-black"></div>
+        <div
+          className={`pointer-events-none absolute inset-2 rounded-xl border-2 border-dashed transition-colors ${
+            isDragging ? "border-blue-500" : "border-black"
+          }`}
+        ></div>
         <svg
           width="47"
           height="47"
@@ -74,7 +120,12 @@ const Dropzone = ({
             strokeLinejoin="round"
           />
         </svg>
-        <p className="z-10 text-lg font-medium text-black">Upload Image</p>
+        <p className="z-10 text-lg font-medium text-black">
+          {isDragging ? "Drop image here" : "Upload Image"}
+        </p>
+        <p className="z-10 text-sm text-gray-500">
+          Or drag and drop
+        </p>
       </motion.label>
     </div>
   );
