@@ -35,7 +35,7 @@ const EditorPage = async () => {
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="text-2xl">Creator</CardTitle>
                     <div className="mt-3">
-                      <span className="text-2xl font-bold">$3</span>
+                      <span className="text-2xl font-bold">$3.5</span>
                       <span className="text-muted-foreground">/One Time</span>
                     </div>
                   </CardHeader>
