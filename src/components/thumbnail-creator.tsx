@@ -380,7 +380,7 @@ useEffect(() => {
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Font Size <span className="text-xs text-muted-foreground">{el.fontSize}px</span></Label>
-                                    <Slider value={[el.fontSize]} onValueChange={(v) => updateTextElement(el.id, { fontSize: v[0] })} min={10} max={300} step={1} />
+                                    <Slider value={[el.fontSize]} onValueChange={(v) => updateTextElement(el.id, { fontSize: v[0] })} min={10} max={400} step={1} />
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Font Weight <span className="text-xs text-muted-foreground">{el.fontWeight}</span></Label>
@@ -395,7 +395,7 @@ useEffect(() => {
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Opacity <span className="text-xs text-muted-foreground">{el.opacity}%</span></Label>
-                                    <Slider value={[el.opacity]} onValueChange={(v) => updateTextElement(el.id, { opacity: v[0] })} min={0} max={100} step={1} />
+                                    <Slider value={[el.opacity]} onValueChange={(v) => updateTextElement(el.id, { opacity: v[0] })} min={0} max={150} step={1} />
                                   </div>
                                   <div className="space-y-1">
                                     <Label className="flex items-center justify-between">Rotation <span className="text-xs text-muted-foreground">{el.rotation}°</span></Label>
