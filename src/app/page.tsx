@@ -90,7 +90,7 @@ export default function Home() {
                   />
                 </svg>
               </span>{" "}
-              your image easily!
+              your image easily !
             </h1>
             <p className="mx-auto pl-4 pr-4 md:p-0 mt-4 max-w-lg md:max-w-xl text-xs text-slate-600 md:text-lg">
               Create pov-style Youtube thumbnails and other social media posts
@@ -130,7 +130,7 @@ const images = [
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqIo0Hh3cxAnKrB75ReLWdhFzMOu2kc0vJ9p8E",
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqNMtbkdeXVCasj83EwuLky6TS12Mbg0qJ5YUO",
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqRgYUvfkmb1p5FcagUo2qfeECnRVOB3hlvjGD",
-  "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqNSUcANeXVCasj83EwuLky6TS12Mbg0qJ5YUO",
+  "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqXfDQZXwIQb73TyX0wj4ZmOkroaeVuRgdftFv",
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSq1v7u3YnDx1lS8fMNFGCXn7wZE95e24VjHmuQ",
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSqjJYYu3TNlrh2LDeJSBcHGKYbZqpmQAz9ER1W",
   "https://f4l2c3q6cm.ufs.sh/f/yx7b1QjLXPSq1v4jJdnDx1lS8fMNFGCXn7wZE95e24VjHmuQ",
