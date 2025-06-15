@@ -70,9 +70,9 @@ export default function Home() {
         <section className="w-full py-7 md:py-15">
           <div className="container mx-auto px-4 text-center sm:px-6">
             <h1 className="text-4xl font-bold leading-tight tracking-tighter sm:text-5xl md:text-6xl md:leading-tight">
-              Insert{" "}
+              Auto Insert{" "}
               <span className="relative inline-block text-orange-800">
-                text in between
+                text between
                 {/* Underline Accent */}
                 <svg
                   className="absolute -bottom-1.5 left-0 w-full md:-bottom-2"
@@ -90,7 +90,7 @@ export default function Home() {
                   />
                 </svg>
               </span>{" "}
-              your image easily !
+              your images
             </h1>
             <p className="mx-auto pl-4 pr-4 md:p-0 mt-4 max-w-lg md:max-w-xl text-xs text-slate-600 md:text-lg">
               Create pov-style Youtube thumbnails and other social media posts
