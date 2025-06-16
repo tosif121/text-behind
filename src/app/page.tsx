@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-white text-black">
       {/* Navigation */}
-    <header className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
+      <header className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-3">
         <Link href="/" className="text-base font-bold md:text-lg">
           <span className="relative inline-block text-orange-800">
             text-in-between
@@ -35,6 +35,12 @@ export default function Home() {
           </span>
         </Link>
         <nav className="flex items-center gap-4">
+          <Link
+            href="/pricing"
+            className="text-black hover:text-gray-700 text-sm font-medium"
+          >
+            Pricing
+          </Link>
           <div className="flex items-center gap-4">
             <a
               href="https://x.com/AdityaShips"

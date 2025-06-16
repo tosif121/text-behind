@@ -21,7 +21,7 @@ export default function PricingPage() {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-2xl">Creator</CardTitle>
               <div className="mt-3">
-                <span className="text-2xl font-bold">$3.5</span>
+                <span className="text-2xl font-bold">$1.5</span>
                 <span className="text-muted-foreground">/One Time</span>
               </div>
             </CardHeader>
@@ -29,7 +29,7 @@ export default function PricingPage() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">Create upto 100 designs</span>
+                  <span className="text-sm">Create upto 1000 designs</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -41,7 +41,11 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">Priority support</span>
+                  <Link href={"https://x.com/AdityaShips"}>
+                    <span className="text-sm text-orange-700">
+                      Chat with founder (Click to DM)
+                    </span>
+                  </Link>
                 </li>
               </ul>
               <SignedIn>
