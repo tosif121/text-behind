@@ -43,7 +43,9 @@ const EditorPage = async () => {
                     <ul className="space-y-2">
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm">Create upto 1000 designs</span>
+                        <span className="text-sm">
+                          Create upto 1000 designs
+                        </span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -100,19 +102,19 @@ const EditorPage = async () => {
                   </CardContent>
                 </Card>
                 <p className="text-amber-600 text-xs text-center font-semibold mt-5">
-                  Dear, {convexUser?.name}
+                  Dear, {convexUser?.name ?? "User"}!
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  You have {convexUser?.credits} credits left
+                  You have {convexUser?.credits ?? 0} credits left
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  please purchace credits and refresh the page
+                  I&apos;m just 1 person, I need your support to keep the
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  we are a small team, we need your support to keep the
+                  service running. I need to pay $20 for hosting!
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  service running. Thank you for your support!
+                  please purchace credits and continue using the service.
                 </p>
               </div>
             </div>

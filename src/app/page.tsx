@@ -102,7 +102,7 @@ export default function Home() {
               Create pov-style Youtube thumbnails and other social media posts
               that actually go viral.
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+            <div className="mt-8 flex flex-row items-center justify-center gap-4 sm:flex-row sm:gap-6">
               <SignedIn>
                 <Link href="/text-in-between">
                   <Button className="w-full bg-black text-white hover:bg-slate-800 sm:w-auto">
@@ -118,6 +118,12 @@ export default function Home() {
                   <SignInButton mode="modal">Try Now</SignInButton>
                 </Button>
               </SignedOut>
+              <Button
+                variant="outline"
+                asChild
+              >
+                <Link href="https://youtu.be/iedOUP4Kl0U">Demo</Link>
+              </Button>
             </div>
           </div>
         </section>

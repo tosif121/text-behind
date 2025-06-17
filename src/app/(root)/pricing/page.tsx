@@ -73,6 +73,15 @@ export default function PricingPage() {
               </SignedOut>
             </CardContent>
           </Card>
+          <p className="text-accent-foreground text-xs text-center mt-5">
+            I&apos;m just 1 person, I need your support to keep the
+          </p>
+          <p className="text-accent-foreground text-xs text-center">
+            service running. I need to pay $20 for hosting!
+          </p>
+          <p className="text-accent-foreground text-xs text-center">
+            please purchace credits and continue using the service.
+          </p>
         </div>
       </div>
     </div>

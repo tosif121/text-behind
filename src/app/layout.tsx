@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     absolute: "Text In Between",
   },
   description:
-    "Easily Put text in between the subject and the background of an image.",
+    "Auto insert text behind your image.",
 };
 
 export default function RootLayout({
