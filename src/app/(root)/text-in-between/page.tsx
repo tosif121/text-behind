@@ -35,7 +35,7 @@ const EditorPage = async () => {
                   <CardHeader className="text-center pb-2">
                     <CardTitle className="text-2xl">Creator</CardTitle>
                     <div className="mt-3">
-                      <span className="text-2xl font-bold">$1.5</span>
+                      <span className="text-2xl font-bold">$4</span>
                       <span className="text-muted-foreground">/One Time</span>
                     </div>
                   </CardHeader>
@@ -44,7 +44,7 @@ const EditorPage = async () => {
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span className="text-sm">
-                          Create upto 1000 designs
+                          1000 images
                         </span>
                       </li>
                       <li className="flex items-center gap-2">
@@ -111,7 +111,7 @@ const EditorPage = async () => {
                   I&apos;m just 1 person, I need your support to keep the
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  service running. I need to pay $20 for hosting!
+                  service running. I need to pay for servers!
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
                   please purchace credits and continue using the service.
