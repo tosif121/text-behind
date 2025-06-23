@@ -43,9 +43,7 @@ const EditorPage = async () => {
                     <ul className="space-y-2">
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm">
-                          1000 images
-                        </span>
+                        <span className="text-sm">1000 images</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -101,20 +99,25 @@ const EditorPage = async () => {
                     </SignedOut>
                   </CardContent>
                 </Card>
-                <p className="text-amber-600 text-xs text-center font-semibold mt-5">
-                  Dear, {convexUser?.name ?? "User"}!
+                <p className="text-amber-700 text-xs text-center font-semibold mt-5">
+                  Dear, {convexUser?.name ?? "User"}
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
                   You have {convexUser?.credits ?? 0} credits left
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  I&apos;m just 1 person, I need your support to keep the
-                </p>
-                <p className="text-accent-foreground text-xs text-center">
-                  service running. I need to pay for servers!
-                </p>
-                <p className="text-accent-foreground text-xs text-center">
                   please purchase credits and continue using the service.
+                </p>
+                <p className="text-accent-foreground text-xs text-center mt-3">
+                  Copy and paste this email of yours
+                </p>
+                <p className="text-accent-foreground text-xs text-center">
+                  <span className="text-orange-700 font-bold">
+                    {convexUser?.email}
+                  </span>{" "}
+                </p>
+                <p className="text-accent-foreground text-xs text-center">
+                  When you visit the payment portal 😊.
                 </p>
               </div>
             </div>

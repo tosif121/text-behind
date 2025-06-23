@@ -82,6 +82,12 @@ export default function PricingPage() {
           <p className="text-accent-foreground text-xs text-center">
             please purchase credits and continue using the service.
           </p>
+          <p className="text-accent-foreground text-xs text-center mt-3">
+            When you visit the payment portal
+          </p>
+          <p className="text-accent-foreground text-xs text-center">
+            paste the same email you used to sign in to TextInBetween
+          </p>
         </div>
       </div>
     </div>
