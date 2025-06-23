@@ -114,7 +114,7 @@ const EditorPage = async () => {
                   service running. I need to pay for servers!
                 </p>
                 <p className="text-accent-foreground text-xs text-center">
-                  please purchace credits and continue using the service.
+                  please purchase credits and continue using the service.
                 </p>
               </div>
             </div>

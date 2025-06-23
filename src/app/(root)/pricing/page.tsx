@@ -80,7 +80,7 @@ export default function PricingPage() {
             service running. I need to pay for the servers!
           </p>
           <p className="text-accent-foreground text-xs text-center">
-            please purchace credits and continue using the service.
+            please purchase credits and continue using the service.
           </p>
         </div>
       </div>
