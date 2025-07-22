@@ -25,7 +25,7 @@ import {
   Download,
   RotateCcw,
   Type,
-  Image as ImageIcon,
+  ImageIcon,
   Loader2,
   PlusCircle,
   Trash2,
@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { SkeletonCard } from "./SkeletonCard";
 import FontFamilyPicker from "./font-picker";
+import { Switch } from "./ui/switch";
 
 interface TextElement {
   id: string;
@@ -46,6 +47,8 @@ interface TextElement {
   positionX: number;
   positionY: number;
   letterSpacing: number;
+  hasShadow: boolean;
+  isForeground: boolean;
 }
 
 const initialTextElement: Omit<TextElement, "id"> = {
@@ -59,6 +62,8 @@ const initialTextElement: Omit<TextElement, "id"> = {
   positionX: 50,
   positionY: 50,
   letterSpacing: 0,
+  hasShadow: true,
+  isForeground: false, 
 };
 
 const ThumbnailCreator = () => {
@@ -72,25 +77,25 @@ const ThumbnailCreator = () => {
   const [imageBrightness, setImageBrightness] = useState(100);
   const [imageContrast, setImageContrast] = useState(100);
 
-useEffect(() => {
-  const fonts = textElements
-    .map(el => el.fontFamily)
-    .filter((f, i, self) => self.indexOf(f) === i);
+  useEffect(() => {
+    const fonts = textElements
+      .map(el => el.fontFamily)
+      .filter((f, i, self) => self.indexOf(f) === i);
 
-  if (fonts.length > 0 && typeof window !== 'undefined') {
-    import('webfontloader').then(WebFont => {
-      WebFont.load({
-        google: {
-          families: fonts,
-        },
-        active: () => {
-          drawCompositeImage();
-        },
+    if (fonts.length > 0 && typeof window !== 'undefined') {
+      import('webfontloader').then(WebFont => {
+        WebFont.load({
+          google: {
+            families: fonts,
+          },
+          active: () => {
+            drawCompositeImage();
+          },
+        });
       });
-    });
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [textElements.map(el => el.fontFamily).join(',')]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textElements.map(el => el.fontFamily).join(',')]);
 
   const setSelectedImage = async (file?: File) => {
     if (file) {
@@ -112,6 +117,7 @@ useEffect(() => {
           addNewText();
         }
         setLoading(false);
+        await generate();
       };
       reader.readAsDataURL(file);
       await generate();
@@ -131,7 +137,7 @@ useEffect(() => {
     );
   };
 
-  const handleAttributeChange = (id: string, attribute: string, value: string | number) => {
+  const handleAttributeChange = (id: string, attribute: string, value: string | number | boolean) => {
     updateTextElement(id, { [attribute]: value });
   };
 
@@ -209,34 +215,60 @@ useEffect(() => {
         ctx.filter = 'none';
         ctx.globalAlpha = 1;
 
-        // 2. Draw text elements
-        textElements.forEach((textEl) => {
-          ctx.save();
-          const x = canvas.width * (textEl.positionX / 100);
-          const y = canvas.height * (textEl.positionY / 100);
+        // Separate text elements into foreground and background layers
+        const foregroundTextElements = textElements.filter(el => el.isForeground);
+        const backgroundTextElements = textElements.filter(el => !el.isForeground);
 
-          ctx.translate(x, y);
-          ctx.rotate((textEl.rotation * Math.PI) / 180);
+        // Function to draw a list of text elements
+        const drawTextElements = (elementsToDraw: TextElement[]) => {
+          elementsToDraw.forEach((textEl) => {
+            ctx.save();
+            const x = canvas.width * (textEl.positionX / 100);
+            const y = canvas.height * (textEl.positionY / 100);
 
-          ctx.font = `${textEl.fontWeight} ${textEl.fontSize}px "${textEl.fontFamily}"`;
-          if ("letterSpacing" in ctx && typeof (ctx as any).letterSpacing === 'string') {
-            (ctx as any).letterSpacing = `${textEl.letterSpacing}px`;
-          }
+            ctx.translate(x, y);
+            ctx.rotate((textEl.rotation * Math.PI) / 180);
 
-          ctx.fillStyle = textEl.color;
-          ctx.globalAlpha = textEl.opacity / 100;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
+            ctx.font = `${textEl.fontWeight} ${textEl.fontSize}px "${textEl.fontFamily}"`;
+            if ("letterSpacing" in ctx && typeof (ctx as any).letterSpacing === 'string') {
+              (ctx as any).letterSpacing = `${textEl.letterSpacing}px`;
+            }
 
-          ctx.fillText(textEl.content, 0, 0);
-          ctx.restore();
-        });
+            // Apply shadow if enabled with darker, more pronounced settings
+            if (textEl.hasShadow) {
+              ctx.shadowColor = 'rgba(0, 0, 0, 1)';
+              ctx.shadowBlur = 8; 
+              ctx.shadowOffsetX = 5;
+              ctx.shadowOffsetY = 5; 
+            } else {
+              ctx.shadowColor = 'transparent'; // No shadow
+              ctx.shadowBlur = 0;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 0;
+            }
 
-        // 3. Draw processed image on top
+            ctx.fillStyle = textEl.color;
+            ctx.globalAlpha = textEl.opacity / 100;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(textEl.content, 0, 0);
+            ctx.restore();
+          });
+        };
+
+        // 2. Draw text elements that are *behind* the processed image
+        drawTextElements(backgroundTextElements);
+
+        // 3. Draw processed image (foreground image without background)
         if (processedImg) {
           ctx.globalAlpha = 1;
           ctx.drawImage(processedImg, 0, 0, canvas.width, canvas.height);
         }
+
+        // 4. Draw text elements that are *above* the processed image
+        drawTextElements(foregroundTextElements);
+
       })
       .catch(error => {
         console.error("Error during canvas drawing:", error);
@@ -357,7 +389,7 @@ useEffect(() => {
 
                         <TabsContent value="text" className="mt-4 w-full">
                           <Button onClick={addNewText} className="w-full">
-                            <PlusCircle className="h-4 w-4 mr-2" /> Add New Text
+                            <PlusCircle className="h-4 w-4 mr-2" />New Text
                           </Button>
                           <Accordion type="multiple" className="w-full space-y-2 mt-4">
                             {textElements.map((el, index) => (
@@ -413,6 +445,24 @@ useEffect(() => {
                                     <Label className="flex items-center justify-between">Letter Spacing <span className="text-xs text-muted-foreground">{el.letterSpacing}px</span></Label>
                                     <Slider value={[el.letterSpacing]} onValueChange={(v) => updateTextElement(el.id, { letterSpacing: v[0] })} min={-20} max={50} step={1} />
                                   </div>
+                                  {/* Shadow toggle */}
+                                  <div className="flex items-center justify-between space-x-2">
+                                    <Label htmlFor={`shadow-toggle-${el.id}`}>Black Shadow</Label>
+                                    <Switch
+                                      id={`shadow-toggle-${el.id}`}
+                                      checked={el.hasShadow}
+                                      onCheckedChange={(checked) => updateTextElement(el.id, { hasShadow: checked })}
+                                    />
+                                  </div>
+                                  {/* Text foreground/background toggle */}
+                                  <div className="flex items-center justify-between space-x-2">
+                                    <Label htmlFor={`text-foreground-toggle-${el.id}`}>Text above image</Label>
+                                    <Switch
+                                      id={`text-foreground-toggle-${el.id}`}
+                                      checked={el.isForeground}
+                                      onCheckedChange={(checked) => updateTextElement(el.id, { isForeground: checked })}
+                                    />
+                                  </div>
                                   <Separator className="my-3" />
                                   <div className="flex gap-2 justify-end">
                                     <Button variant="outline" size="sm" onClick={() => duplicateTextElement(el.id)}><Copy size={14} className="mr-1" /> Duplicate</Button>
@@ -421,8 +471,8 @@ useEffect(() => {
                                 </AccordionContent>
                               </AccordionItem>
                             ))}
+                            {textElements.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No text elements added. Click &quot;Add New Text&quot; to begin.</p>}
                           </Accordion>
-                          {textElements.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No text elements added. Click &quot;Add New Text&quot; to begin.</p>}
                         </TabsContent>
 
                         <TabsContent value="image" className="mt-4 w-full">
@@ -452,7 +502,7 @@ useEffect(() => {
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-300px)] px-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2">Create Your Design</h1>
-            <p className="text-muted-foreground">Start by uploading an image.</p>
+            <p className="text-muted-foreground ">Start by uploading an high quality image</p>
           </div>
           <div className="w-full max-w-lg">
             <Dropzone setSelectedImage={setSelectedImage} />
