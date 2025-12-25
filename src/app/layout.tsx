@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
-import Script from "next/script";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -43,11 +42,6 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Script
-            src="https://getfeedback-widget.vercel.app/widget.umd.js"
-            strategy="afterInteractive"
-          />
-           <div dangerouslySetInnerHTML={{ __html: '<my-widget project-id="9"></my-widget>' }} />
               {children}
               <Toaster 
                 position="top-right"

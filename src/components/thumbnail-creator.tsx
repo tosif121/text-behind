@@ -92,9 +92,29 @@ const ThumbnailCreator = () => {
             families: fonts,
           },
           active: () => {
-            drawCompositeImage();
+            try {
+              drawCompositeImage();
+            } catch (error) {
+              console.error("Error drawing composite image:", error);
+            }
+          },
+          inactive: () => {
+            // Fallback: draw without custom fonts
+            try {
+              drawCompositeImage();
+            } catch (error) {
+              console.error("Error drawing composite image (fallback):", error);
+            }
           },
         });
+      }).catch(error => {
+        console.error("Error loading WebFont:", error);
+        // Fallback: draw without webfont loader
+        try {
+          drawCompositeImage();
+        } catch (error) {
+          console.error("Error drawing composite image (no webfont):", error);
+        }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,22 +128,37 @@ const ThumbnailCreator = () => {
         const src = e.target?.result as string;
         setImageSrc(src);
         try {
-          const blob = await removeBackground(src);
+          // Add timeout and better error handling for background removal
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Background removal timeout')), 30000)
+          );
+          
+          const removalPromise = removeBackground(src);
+          const blob = await Promise.race([removalPromise, timeoutPromise]) as Blob;
           const processedUrl = URL.createObjectURL(blob);
           setProcessedImageSrc(processedUrl);
         } catch (error) {
           console.error("Error removing background:", error);
           setProcessedImageSrc(null);
+          // Continue without background removal
         }
         setCanvasReady(true);
         if (textElements.length === 0) {
           addNewText();
         }
         setLoading(false);
-        await generate();
+        try {
+          await generate();
+        } catch (error) {
+          console.error("Error in generate function:", error);
+        }
       };
       reader.readAsDataURL(file);
-      await generate();
+      try {
+        await generate();
+      } catch (error) {
+        console.error("Error in generate function:", error);
+      }
     }
   };
 
