@@ -76,6 +76,9 @@ const ThumbnailCreator = () => {
   const [backgroundOpacity, setBackgroundOpacity] = useState(100);
   const [imageBrightness, setImageBrightness] = useState(100);
   const [imageContrast, setImageContrast] = useState(100);
+  const [imageSaturation, setImageSaturation] = useState(100);
+  const [imageHue, setImageHue] = useState(0);
+  const [imageBlur, setImageBlur] = useState(0);
 
   useEffect(() => {
     const fonts = textElements
@@ -209,7 +212,7 @@ const ThumbnailCreator = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // 1. Draw background image
-        ctx.filter = `brightness(${imageBrightness}%) contrast(${imageContrast}%)`;
+        ctx.filter = `brightness(${imageBrightness}%) contrast(${imageContrast}%) saturate(${imageSaturation}%) hue-rotate(${imageHue}deg) blur(${imageBlur}px)`;
         ctx.globalAlpha = backgroundOpacity / 100;
         ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
         ctx.filter = 'none';
@@ -289,7 +292,7 @@ const ThumbnailCreator = () => {
       });
   }, [
     canvasReady, imageSrc, processedImageSrc, textElements,
-    backgroundOpacity, imageBrightness, imageContrast
+    backgroundOpacity, imageBrightness, imageContrast, imageSaturation, imageHue, imageBlur
   ]);
 
   useEffect(() => {
@@ -312,6 +315,9 @@ const ThumbnailCreator = () => {
     setBackgroundOpacity(100);
     setImageBrightness(100);
     setImageContrast(100);
+    setImageSaturation(100);
+    setImageHue(0);
+    setImageBlur(0);
   };
 
   const resetImageAndCanvas = async () => {
@@ -378,12 +384,12 @@ const ThumbnailCreator = () => {
                   <ScrollArea className="h-120 lg:h-[calc(100vh-250px)] rounded-md ">
                     <div className="p-3 space-y-4 w-full max-w-full overflow-x-hidden">
                       <Tabs defaultValue="text" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4 gap-1">
+                        <TabsList className="grid w-full grid-cols-2 gap-1">
                           <TabsTrigger value="text" className="flex items-center gap-2">
-                            <Type className="h-7 w-7" /> Text
+                            <Type className="h-4 w-4" /> Text
                           </TabsTrigger>
                           <TabsTrigger value="image" className="flex items-center gap-2">
-                            <ImageIcon className="h-7 w-7" /> Img
+                            <ImageIcon className="h-4 w-4" /> Image
                           </TabsTrigger>
                         </TabsList>
 
@@ -480,12 +486,28 @@ const ThumbnailCreator = () => {
                             <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ImageIcon className="h-5 w-5" /> Image Settings</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                               <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Background Opacity <span className="text-xs text-muted-foreground">{backgroundOpacity}%</span></Label>
+                                <Slider value={[backgroundOpacity]} onValueChange={(v) => setBackgroundOpacity(v[0])} min={0} max={100} step={1} />
+                              </div>
+                              <div className="space-y-1">
                                 <Label className="flex items-center justify-between">Brightness <span className="text-xs text-muted-foreground">{imageBrightness}%</span></Label>
                                 <Slider value={[imageBrightness]} onValueChange={(v) => setImageBrightness(v[0])} min={0} max={200} step={1} />
                               </div>
                               <div className="space-y-1">
                                 <Label className="flex items-center justify-between">Contrast <span className="text-xs text-muted-foreground">{imageContrast}%</span></Label>
                                 <Slider value={[imageContrast]} onValueChange={(v) => setImageContrast(v[0])} min={0} max={200} step={1} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Saturation <span className="text-xs text-muted-foreground">{imageSaturation}%</span></Label>
+                                <Slider value={[imageSaturation]} onValueChange={(v) => setImageSaturation(v[0])} min={0} max={200} step={1} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Hue Rotate <span className="text-xs text-muted-foreground">{imageHue}°</span></Label>
+                                <Slider value={[imageHue]} onValueChange={(v) => setImageHue(v[0])} min={-180} max={180} step={1} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="flex items-center justify-between">Blur <span className="text-xs text-muted-foreground">{imageBlur}px</span></Label>
+                                <Slider value={[imageBlur]} onValueChange={(v) => setImageBlur(v[0])} min={0} max={20} step={0.5} />
                               </div>
                             </CardContent>
                           </Card>
