@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import ConvexClientProvider from "../components/providers/ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script";
+import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - Text In Between",
-    absolute: "Text In Between",
+    template: "%s - TextBehind",
+    absolute: "TextBehind",
   },
   description:
-    "Auto insert text behind your image.",
+    "Create stunning thumbnails with text overlays behind your images. Free AI-powered background removal and professional text customization.",
 };
 
 export default function RootLayout({
@@ -31,22 +31,46 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <>
       <Analytics />
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <Script
-          src="https://getfeedback-widget.vercel.app/widget.umd.js"
-          strategy="afterInteractive"
-        />
-         <my-widget project-id="9"></my-widget>
-          <ConvexClientProvider>
-            {children}
-          </ConvexClientProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Script
+            src="https://getfeedback-widget.vercel.app/widget.umd.js"
+            strategy="afterInteractive"
+          />
+           <div dangerouslySetInnerHTML={{ __html: '<my-widget project-id="9"></my-widget>' }} />
+              {children}
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  className: 'bg-card text-card-foreground border border-border',
+                  style: {},
+                  success: {
+                    duration: 3000,
+                    className: 'bg-green-50 text-green-900 border-green-200 dark:bg-green-900 dark:text-green-100 dark:border-green-800',
+                  },
+                  error: {
+                    duration: 5000,
+                    className: 'bg-red-50 text-red-900 border-red-200 dark:bg-red-900 dark:text-red-100 dark:border-red-800',
+                  },
+                  loading: {
+                    className: 'bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-800',
+                  },
+                }}
+              />
+          </ThemeProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </>
   );
 }

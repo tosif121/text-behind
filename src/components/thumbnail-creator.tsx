@@ -391,7 +391,7 @@ const ThumbnailCreator = () => {
                           <Button onClick={addNewText} className="w-full">
                             <PlusCircle className="h-4 w-4 mr-2" />New Text
                           </Button>
-                          <Accordion type="multiple" className="w-full space-y-2 mt-4">
+                          <Accordion type="multiple" className="w-full space-y-2 mt-4" defaultValue={textElements.map(el => el.id)}>
                             {textElements.map((el, index) => (
                               <AccordionItem value={el.id} key={el.id} className="border bg-card p-2 rounded-md">
                                 <AccordionTrigger className="text-sm hover:no-underline px-2 py-3">
